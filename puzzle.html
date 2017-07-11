@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Puzzle de imagenes</title>
+    <!-- Bootstrap -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        td img {
+            display: block;
+        }
+        
+        td,
+        tr {
+            padding: 0;
+        }
+        
+        h1 {
+            text-align: center;
+        }
+
+    </style>
+</head>
+
+<body>
+    <h1> Puzzle imagen 1.0</h1>
+    <br>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-7">
+                <div id="mitabla"></div>
+            </div>
+            <div class="col-lg-5">
+                <img src="imgP/homer1.jpg" alt="homer" width="450" height="450">
+                <br><br><br>
+                <div class="panel panel-success">
+                    <div class="panel-heading">Veces de cambio de imagen.</div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label for="inputlg">Numero:</label>
+                            <input class="form-control input-lg" id="inputlg" type="text" value = "0" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function obtenerPosicion() {
+            var fila = Math.floor((Math.random() * 4) + 1);
+            var col = Math.floor((Math.random() * 4) + 1);
+            return fila + "x" + col;
+        }
+
+        function crearArray() {
+            var imagenes = [];
+            while (imagenes.length < 16) {
+                var posicion = obtenerPosicion();
+                if (imagenes.indexOf(posicion) === -1) {
+                    imagenes.push(posicion);
+                }
+            }
+            imagenes = borra1_4(imagenes);
+            pintaTabla(imagenes);
+        }
+
+        function borra1_4(imagenes) {
+            var pos = imagenes.indexOf("1x4");
+            imagenes.splice(pos, 1);
+            return imagenes;
+        }
+
+        function pintaTabla(imagenes) {
+            var dTabla = document.getElementById("mitabla");
+            var puzzle = document.createElement("table");
+            puzzle.style.borderSpacing = "0px";
+            puzzle.style.border = "1px solid black";
+            dTabla.appendChild(puzzle);
+            var cuerpo = document.createElement("tbody");
+            puzzle.appendChild(cuerpo);
+            var posArray = 0;
+            for (var i = 0; i < 4; i++) {
+                var fila = document.createElement("tr");
+                fila.id = i;
+                for (var j = 0; j < 4; j++) {
+                    var col = document.createElement("td");
+                    col.id = i + "x" + j;
+                    var trozoIm = document.createElement("img");
+                    if ((i === 3) && (j === 3)) {
+                        trozoIm.src = "imgP/blanca.jpg";
+                        trozoIm.alt = "blanca";
+                    } else {
+                        trozoIm.src = "imgP/homer1_swap_part" + imagenes[posArray] + ".jpg";
+                        trozoIm.alt = i + "x" + j;
+                        posArray++;
+                    }
+                    col.appendChild(trozoIm);
+                    col.addEventListener("click", function() {
+                        juego(this);
+                    });
+                    fila.appendChild(col);
+                }
+                cuerpo.appendChild(fila);
+            }
+        }
+
+        function juego(elemento) {
+            //            alert("click en el elemento fila: " + elemento.parentElement.getAttribute("id") + " columna: " + elemento.cellIndex);
+            //obtengo la fila  y la columna
+            var fila = elemento.parentElement.getAttribute("id");
+            col = elemento.cellIndex;
+            comprobar(fila, col, elemento);
+            //            // obtengo el alt de la imagen para saber que imagen es
+            //            alert("alt: " + elemento.childNodes[0].alt);
+            //            // lo usaremos para cambiar el contenido
+            //            alert("contenido: " + elemento.innerHTML);
+        }
+
+        function comprobar(fila, columna, elemento) {
+            //  tendremos que comprobar  arriba, abajo, izquierda y derecha y si se salen de los margenes de la tabla lo descartaremos
+            var encontrado = false;
+            cambiar = "";
+            aux = "";
+            posiciones = [];
+            filasup = parseInt(fila) - 1;
+            filainf = parseInt(fila) + 1;
+            colizq = parseInt(columna) - 1;
+            coldch = parseInt(columna) + 1;
+            if (filasup >= 0) {
+                posiciones.push(filasup + "x" + columna);
+            }
+            if (filainf <= 3) {
+                posiciones.push(filainf + "x" + columna);
+            }
+            if (colizq >= 0) {
+                posiciones.push(fila + "x" + colizq);
+            }
+            if (coldch <= 3) {
+                posiciones.push(fila + "x" + coldch);
+            }
+            for (var i = 0; i < posiciones.length; i++) {
+                if (document.getElementById(posiciones[i]).childNodes[0].alt === "blanca") {
+                    encontrado = true;
+                    cambiar = posiciones[i];
+                }
+            }
+            if (encontrado) {
+                aux = "";
+                aux = elemento.innerHTML;
+                elemento.innerHTML = document.getElementById(cambiar).innerHTML;
+                document.getElementById(cambiar).innerHTML = aux;
+                var suma = document.getElementById("inputlg").value;
+                suma =parseInt(suma) + 1 ;
+                document.getElementById("inputlg").value = suma;
+               
+            }
+        }
+        crearArray();
+
+    </script>
+</body>
+
+</html>
